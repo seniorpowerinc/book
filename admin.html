@@ -256,12 +256,6 @@
         <option value="ja">日本語</option>
     </select>
 
-    <label for="title">禮物頁面標題</label>
-    <input id="title" />
-
-    <label for="subtitle">開啟禮物後內文</label>
-    <input id="subtitle" />
-
     <input id="pdf" readonly />
     <input id="coverImage" readonly />
 
@@ -388,8 +382,6 @@
                     const content = JSON.parse(decodeURIComponent(escape(raw)));
                     document.getElementById('pageTitle').value = content.pageTitle || '';
                     document.getElementById('lang').value = content.lang || 'zh-TW';
-                    document.getElementById('title').value = content.title || '';
-                    document.getElementById('subtitle').value = content.subtitle || '';
                     document.getElementById('pdf').value = content.pdf || '';
                     document.getElementById('coverImage').value = content.coverImage || '';
 
@@ -509,8 +501,6 @@
             const payload = {
                 pageTitle: document.getElementById('pageTitle').value,
                 lang: document.getElementById('lang').value,
-                title: document.getElementById('title').value,
-                subtitle: document.getElementById('subtitle').value,
                 pdf: document.getElementById('pdf').value,
                 coverImage: document.getElementById('coverImage').value,
                 owner,
