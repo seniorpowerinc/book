@@ -29,6 +29,11 @@
       align-items: center;
       padding-bottom: 20px;
     }
+    h1 {
+      font-weight: bold;
+      font-size: 34px;
+      margin-bottom: 10px;
+    }
     .gift-container {
       position: relative;
       width: 90vw;
@@ -53,17 +58,21 @@
       transform: scale(1.8);
       opacity: 0;
     }
-    #pdf-container {
+    #message, #pdf-container {
       display: none;
       margin-top: 0;
       opacity: 0;
       transform: translateY(20px);
       transition: opacity 1s ease, transform 1s ease;
     }
+    #message.show,
     #pdf-container.show {
       display: block;
       opacity: 1;
       transform: translateY(0);
+    }
+    #message {
+      font-size: 28px;
     }
     #pdf-render-container {
       position: relative;
@@ -112,6 +121,14 @@
       align-items: center;
       margin: 10px auto;
     }
+    .page-info {
+      margin: 0 5px;
+      font-size: 18px;
+      background-color: rgba(255, 255, 255, 0.7);
+      padding: 5px 10px;
+      border-radius: 20px;
+      display: inline-block;
+    }
     .open-button {
       background: linear-gradient(145deg, #63BE7B, #FFEF9C);
       color: black;
@@ -145,9 +162,15 @@
         height: 40px;
         font-size: 16px; 
       }
+      h1 {
+        font-size: 28px;
+      }
       .open-button {
         font-size: 28px;
         padding: 10px 24px;
+      }
+      .page-info {
+        font-size: 16px;
       }
     }
   </style>
@@ -178,7 +201,6 @@ fetch(`data.json?bust=${bust}`)
       <img class="cover-image" src="images/box-top.png" alt="cover image" id="coverImage">
       <button class="open-button" id="openButton">READ</button>
     </div>
-
     <div id="pdf-container">
       <div id="pdf-render-container">
         <canvas id="pdf-canvas"></canvas>
@@ -194,6 +216,7 @@ fetch(`data.json?bust=${bust}`)
   <audio id="celebration-sound" src="images/open.mp3" preload="auto"></audio>
 
   <script>
+    const giftBox = document.getElementById('gift-box');
     const coverImage = document.getElementById('coverImage');
     const openButton = document.getElementById('openButton');
     const pdfContainer = document.getElementById('pdf-container');
@@ -274,10 +297,13 @@ fetch(`data.json?bust=${bust}`)
     });
 
     function openGift() {
+      giftBox.classList.remove('gift-animate');
       coverImage.classList.add('lift-open');
       openButton.style.display = 'none';
 
       setTimeout(() => {
+        giftBox.style.display = 'none';
+        message.classList.add('show');
         pdfContainer.classList.add('show');
         try {
           sound.play().catch(() => {});
@@ -304,7 +330,13 @@ fetch(`data.json?bust=${bust}`)
       openGift();
     });
 
-
+    giftBox.addEventListener('click', openGift);
+    giftBox.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault();
+        openGift();
+      }
+    });
   </script>
 </body>
 </html>
