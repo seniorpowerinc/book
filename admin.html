@@ -518,11 +518,13 @@
             })
                 .then(res => res.ok ? res.json() : Promise.reject('更新失敗'))
                 .then(() => {
+                    setTimeout(() => {
                     currentStep = 4;
                     markStepDone(4);
                     updateButtonStates();
                     alert('資料更新成功，開始部署...');
                     triggerWorkflow(token);
+                    }, 5000);
                 })
                 .catch(err => {
                     alert('更新失敗：' + err);
@@ -541,13 +543,9 @@
                         body: JSON.stringify({ ref: 'main' })
                     }
                 );
-
                 if (!response.ok) throw new Error('部署觸發失敗');
                 alert('部署已成功觸發，5 秒後顯示進度條並開始監控進度...');
-                setTimeout(() => {
                 waitForWorkflow(token);
-                }, 5000);
-
             } catch (error) {
                 alert('部署錯誤：' + error.message);
                 isDeploying = false;
