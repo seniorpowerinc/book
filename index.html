@@ -58,21 +58,17 @@
       transform: scale(1.8);
       opacity: 0;
     }
-    #message, #pdf-container {
+    #pdf-container {
       display: none;
       margin-top: 0;
       opacity: 0;
       transform: translateY(20px);
       transition: opacity 1s ease, transform 1s ease;
     }
-    #message.show,
     #pdf-container.show {
       display: block;
       opacity: 1;
       transform: translateY(0);
-    }
-    #message {
-      font-size: 28px;
     }
     #pdf-render-container {
       position: relative;
@@ -201,6 +197,7 @@ fetch(`data.json?bust=${bust}`)
       <img class="cover-image" src="images/SPI.png" alt="cover image" id="coverImage">
       <button class="open-button" id="openButton">READ</button>
     </div>
+
     <div id="pdf-container">
       <div id="pdf-render-container">
         <canvas id="pdf-canvas"></canvas>
@@ -303,7 +300,6 @@ fetch(`data.json?bust=${bust}`)
 
       setTimeout(() => {
         giftBox.style.display = 'none';
-        message.classList.add('show');
         pdfContainer.classList.add('show');
         try {
           sound.play().catch(() => {});
