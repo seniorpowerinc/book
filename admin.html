@@ -544,7 +544,9 @@
 
                 if (!response.ok) throw new Error('部署觸發失敗');
                 alert('部署已成功觸發，5 秒後顯示進度條並開始監控進度...');
+                setTimeout(() => {
                 waitForWorkflow(token);
+                }, 5000);
 
             } catch (error) {
                 alert('部署錯誤：' + error.message);
@@ -573,7 +575,7 @@
                     })
                     .catch(err => alert('無法取得 workflow run：' + err.message));
 
-            }, 5000);
+            }, 1000);
         }
 
         // 監控部署進度
