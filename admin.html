@@ -480,7 +480,8 @@
                     fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${path}`, {
                         method: 'PUT',
                         headers: { Authorization: `token ${token}` },
-                        body: JSON.stringify({ message: `Upload ${file.name}`, content: base64 })
+                        body: JSON.stringify({ message: `Upload ${file.name}`, content: base64 }),
+                        sha
                     })
                         .then(res => res.ok ? res.json() : Promise.reject('上傳失敗'))
                         .then(() => resolve())
