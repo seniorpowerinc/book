@@ -1,9 +1,8 @@
 {
   "pageTitle": "A Gift from Alan",
   "lang": "zh-TW",
-  "pdf": "pdfs/A Concerto of Two Grandfathers.pdf",
+  "pdf": "pdfs/CO1622892732372103195.pdf",
+  "coverImage": "images/SPI-科技外送icon.png",
   "owner": "seniorpowerinc",
-  "repo": "book",
-  "coverImage": "images/A Concerto of Two Grandfathers.jpg"
+  "repo": "book"
 }
-
