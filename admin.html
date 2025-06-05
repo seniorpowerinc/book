@@ -457,7 +457,10 @@
                 uploadPromises.push(imagePromise);
             }
 
-            console.log(Promise.all(uploadPromises)
+            Promise.all(uploadPromises)
+                .then(results => {
+                    console.log('all:', results);
+                })
                 .then(() => {
                     currentStep = 3;
                     markStepDone(3);
@@ -468,7 +471,7 @@
                     alert('上傳失敗：' + err);
                     currentStep = 2;
                     updateButtonStates();
-                });)
+                });
         }
 
         // 上傳單個檔案
