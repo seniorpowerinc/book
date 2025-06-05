@@ -440,7 +440,7 @@
 
       // 上傳 PDF
       if (pdfFile) {
-        const pdfPromise = uploadFile(pdfFile, `pdfs/${pdfFile.name}`, token)
+        const pdfPromise = await uploadFile(pdfFile, `pdfs/${pdfFile.name}`, token)
           .then(() => {
             document.getElementById('pdf').value = `pdfs/${pdfFile.name}`;
           });
@@ -449,7 +449,7 @@
 
       // 上傳圖片
       if (imageFile) {
-        const imagePromise = uploadFile(imageFile, `images/${imageFile.name}`, token)
+        const imagePromise = await uploadFile(imageFile, `images/${imageFile.name}`, token)
           .then(() => {
             document.getElementById('coverImage').value = `images/${imageFile.name}`;
           });
@@ -472,55 +472,55 @@
 
     // 上傳單個檔案
     function uploadFile(file, path, token) {
-      return new Promise((resolve, reject) => {
+    return new Promise((resolve, reject) => {
         const reader = new FileReader();
 
         reader.onload = () => {
-          const base64 = reader.result.split(',')[1];
+            const base64 = reader.result.split(',')[1];
 
-          // 第一步：先檢查檔案是否存在，拿 sha
-          fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${path}`, {
-            method: 'GET',
-            headers: { Authorization: `token ${token}` }
-          })
-            .then(res => {
-              if (res.status === 404) return null; // 檔案不存在
-              if (!res.ok) throw new Error('取得檔案資訊失敗');
-              return res.json();
+            // 先取得當前 GitHub 上的檔案（查 sha）
+            fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${path}`, {
+                method: 'GET',
+                headers: { Authorization: `token ${token}` }
             })
-            .then(data => {
-              const sha = data ? data.sha : undefined;
+                .then(res => {
+                    if (res.status === 404) return null; // 不存在就不加 sha
+                    if (!res.ok) throw new Error('取得 sha 時發生錯誤');
+                    return res.json();
+                })
+                .then(data => {
+                    const sha = data ? data.sha : undefined;
 
-              const body = {
-                message: `Upload ${file.name}`,
-                content: base64,
-                ...(sha ? { sha } : {}) // 如果有 sha 才加
-              };
+                    const body = {
+                        message: `Upload ${file.name}`,
+                        content: base64,
+                        ...(sha ? { sha } : {}) // 動態加 sha
+                    };
 
-              // 第二步：上傳檔案
-              return fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${path}`, {
-                method: 'PUT',
-                headers: {
-                  Authorization: `token ${token}`,
-                  'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(body)
-              });
-            })
-            .then(res => {
-              if (!res.ok) return res.text().then(text => Promise.reject(text));
-              return res.json();
-            })
-            .then(() => resolve())
-            .catch(err => {
-              console.error('❌ 上傳錯誤:', err);
-              reject(err);
-            });
+                    return fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${path}`, {
+                        method: 'PUT',
+                        headers: {
+                            Authorization: `token ${token}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(body)
+                    });
+                })
+                .then(res => {
+                    if (!res.ok) return res.text().then(text => Promise.reject(text));
+                    return res.json();
+                })
+                .then(() => resolve())
+                .catch(err => {
+                    console.error('❌ 上傳錯誤:', err);
+                    reject(err);
+                });
         };
 
         reader.readAsDataURL(file);
-      });
-    }
+    });
+}
+
 
     // 更新網站
     function updateData() {
