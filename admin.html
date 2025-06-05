@@ -458,9 +458,6 @@
             }
 
             Promise.all(uploadPromises)
-                .then(results => {
-                    console.log('all:', results);
-                })
                 .then(() => {
                     currentStep = 3;
                     markStepDone(3);
@@ -480,7 +477,19 @@
                 const reader = new FileReader();
                 reader.onload = () => {
                     const base64 = reader.result.split(',')[1];
-                    
+                     const requestBody = {
+                message: `Upload ${file.name}`,
+                content: base64,
+                // 如果你有 sha 要更新，才加上這個
+                ...(typeof sha !== 'undefined' ? { sha } : {})
+            };
+
+            console.log('🚀 正在上傳:', {
+                url: `https://api.github.com/repos/${owner}/${repo}/contents/${path}`,
+                method: 'PUT',
+                headers: { Authorization: `token ${token}` },
+                body: requestBody
+            });
                     fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${path}`, {
                         method: 'PUT',
                         headers: { Authorization: `token ${token}` },
