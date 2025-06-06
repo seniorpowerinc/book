@@ -1,15 +1,14 @@
 <!DOCTYPE html>
 <html lang="">
 <head>
+  <link rel="icon" href="favicon.ico" type="image/x-icon">
   <meta charset="UTF-8">
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
   <meta name="viewport" content="width=device-width,initial-scale=1.0">
-  <link rel="icon" href="favicon.ico" type="image/x-icon">
   <title id="pageTitle"></title>
   <style>
-    /* ---------- 全域樣式 ---------- */
     body {
       background: linear-gradient(135deg, #e0f7fa 0%, #bbdefb 50%, #c5cae9 100%);
       font-family: Arial, sans-serif;
@@ -20,14 +19,9 @@
       margin: 0;
       display: flex;
       flex-direction: column;
-      align-items: center;
     }
-
-    /* 將內容區置中，並限制桌面寬度 */
+    .header { padding: 0px 0; }
     .main-content {
-      width: 100%;
-      max-width: 800px;       /* 桌面常用最大寬度，可自行調整 */
-      margin: 0 auto;         /* 置中 */
       flex: 1;
       display: flex;
       flex-direction: column;
@@ -35,13 +29,11 @@
       align-items: center;
       padding-bottom: 20px;
     }
-
     h1 {
       font-weight: bold;
       font-size: 34px;
       margin-bottom: 10px;
     }
-
     .gift-container {
       position: relative;
       width: 90vw;
@@ -50,53 +42,89 @@
       perspective: 1000px;
       cursor: pointer;
     }
-
     .cover-image {
       width: 100%;
       height: auto;
       border-radius: 10px;
-      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+      box-shadow: 0 8px 25px rgba(0,0,0,0.2);
       transition: transform 0.5s ease, opacity 0.5s ease;
       z-index: 2;
       position: relative;
     }
-
     .gift-container:hover .cover-image {
       transform: scale(1.05);
     }
-
     .cover-image.lift-open {
       transform: scale(1.8);
       opacity: 0;
     }
-
-    #message,
     #pdf-container {
       display: none;
       margin-top: 0;
       opacity: 0;
       transform: translateY(20px);
       transition: opacity 1s ease, transform 1s ease;
-      width: 100%;
     }
-
-    #message.show,
     #pdf-container.show {
       display: block;
       opacity: 1;
       transform: translateY(0);
     }
-
-    /* 內嵌 PDF 的樣式 */
-    #pdf-embed {
-      width: 90%;
-      height: 80vh;
+    #pdf-render-container {
+      position: relative;
+      width: 100%;
+      max-width: 90%;
+      margin: 0 auto;
+    }
+    canvas {
+      width: 100% !important;
+      height: auto !important;
       border: 1px solid #ccc;
       border-radius: 8px;
-      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
       margin-top: 16px;
+      opacity: 0;
+      transition: opacity 0.5s ease-in;
     }
-
+    canvas.fade-in {
+      opacity: 1;
+    }
+    .nav-button {
+      background-color: rgba(76, 175, 80, 0.7);
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 50px;
+      height: 50px;
+      font-size: 20px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: background-color 0.3s, transform 0.3s;
+      margin: 0 10px;
+    }
+    .nav-button:hover {
+      background-color: rgba(76, 175, 80, 1);
+      transform: scale(1.1);
+    }
+    .nav-button:active {
+      transform: scale(0.95);
+    }
+    .page-controls {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin: 10px auto;
+    }
+    .page-info {
+      margin: 0 5px;
+      font-size: 18px;
+      background-color: rgba(255, 255, 255, 0.7);
+      padding: 5px 10px;
+      border-radius: 20px;
+      display: inline-block;
+    }
     .open-button {
       background: linear-gradient(145deg, #63BE7B, #FFEF9C);
       color: black;
@@ -114,100 +142,156 @@
       left: 50%;
       transform: translateX(-50%);
     }
-
     .gift-animate {
       animation: pulse 2s ease-in-out infinite;
       animation-delay: 1s;
     }
-
     @keyframes pulse {
       0% { transform: scale(1); }
       50% { transform: scale(1.05); }
       100% { transform: scale(1); }
     }
-
-    /* ---------- 手機版調整 (max-width: 768px) ---------- */
+    /* For mobile */
     @media (max-width: 768px) {
+      .nav-button {
+        width: 40px;
+        height: 40px;
+        font-size: 16px; 
+      }
       h1 {
         font-size: 28px;
       }
-
       .open-button {
         font-size: 28px;
         padding: 10px 24px;
-        bottom: 40px;
       }
-
-      .gift-container {
-        width: 95vw;
-        max-width: none;
-      }
-
-      /* PDF iframe 在手機上改成全寬、較短高度 */
-      #pdf-embed {
-        width: 100%;
-        height: 60vh;
-      }
-
-      /* #message 的字級也可以稍微縮小 */
-      #message {
-        font-size: 24px;
+      .page-info {
+        font-size: 16px;
       }
     }
   </style>
-
-  <!-- 只保留 confetti，若不需要 PDF.js 可移除下面註解 -->
-  <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script> -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 </head>
-
+<script>
+const bust = Date.now();
+fetch(`data.json?bust=${bust}`)
+      .then(r=>r.json())
+      .then(d=>{
+        document.documentElement.lang = d.lang;
+        document.title = d.pageTitle;
+        window.pdfUrl = d.pdf;
+        // 設置封面圖片
+        const coverImage = document.getElementById('coverImage');
+        if (d.coverImage) {
+          coverImage.src = d.coverImage;
+        } else {
+          // 如果沒有設置封面圖片，使用預設圖片
+          coverImage.src = 'images/SPI.png';
+        }
+      }).catch(console.error);
+</script>
 <body>
-  <h1 id="mainTitle"></h1>
-
   <div class="main-content">
     <div class="gift-container gift-animate" id="gift-box" tabindex="0" role="button" aria-label="Open the gift">
-      <img class="cover-image" src="images/box-top.png" alt="cover image" id="coverImage">
+      <img class="cover-image" src="images/SPI.png" alt="cover image" id="coverImage">
       <button class="open-button" id="openButton">READ</button>
     </div>
 
-    <div id="message"></div>
-
     <div id="pdf-container">
-      <iframe
-        id="pdf-embed"
-        src=""
-        type="application/pdf"
-        width="100%"
-        height="100%"
-      ></iframe>
+      <div id="pdf-render-container">
+        <canvas id="pdf-canvas"></canvas>
+      </div>
+      <div class="page-controls">
+        <button id="prev-page" class="nav-button" aria-label="Previous page">❮</button>
+        <span class="page-info">Page <span id="page-num">1</span> / <span id="page-count">?</span></span>
+        <button id="next-page" class="nav-button" aria-label="Next page">❯</button>
+      </div>
     </div>
   </div>
 
   <audio id="celebration-sound" src="images/open.mp3" preload="auto"></audio>
 
   <script>
-    // 讀取 data.json，動態設定標題、封面、PDF 路徑
-    const bust = Date.now();
-    fetch(`data.json?bust=${bust}`)
-      .then(r => r.json())
-      .then(d => {
-        document.documentElement.lang = d.lang;
-        document.title = d.pageTitle;
-        document.getElementById('mainTitle').textContent = d.title;
-        document.getElementById('message').textContent = d.subtitle;
-        window.pdfUrl = d.pdf;
-        const coverImage = document.getElementById('coverImage');
-        coverImage.src = d.coverImage ? d.coverImage : 'images/SPI.png';
-      })
-      .catch(console.error);
-
     const giftBox = document.getElementById('gift-box');
     const coverImage = document.getElementById('coverImage');
     const openButton = document.getElementById('openButton');
-    const message = document.getElementById('message');
     const pdfContainer = document.getElementById('pdf-container');
     const sound = document.getElementById('celebration-sound');
-    const pdfEmbed = document.getElementById('pdf-embed');
+
+    const canvas = document.getElementById('pdf-canvas');
+    const ctx = canvas.getContext('2d');
+    const prevBtn = document.getElementById('prev-page');
+    const nextBtn = document.getElementById('next-page');
+    const pageNumSpan = document.getElementById('page-num');
+    const pageCountSpan = document.getElementById('page-count');
+
+    let pdfDoc = null;
+    let pageNum = 1;
+    let pageRendering = false;
+    let pageNumPending = null;
+    const scale = 1.2;
+
+    function renderPage(num) {
+      pageRendering = true;
+      canvas.classList.remove('fade-in');
+
+      pdfDoc.getPage(num).then(function(page) {
+        const viewport = page.getViewport({ scale });
+        canvas.height = viewport.height;
+        canvas.width = viewport.width;
+
+        const renderContext = { canvasContext: ctx, viewport: viewport };
+        const renderTask = page.render(renderContext);
+
+        renderTask.promise.then(() => {
+          pageRendering = false;
+          setTimeout(() => {
+            canvas.classList.add('fade-in');
+          }, 50);
+
+          if (pageNumPending !== null) {
+            renderPage(pageNumPending);
+            pageNumPending = null;
+          }
+        });
+
+        pageNumSpan.textContent = num;
+
+        prevBtn.style.visibility = num <= 1 ? 'hidden' : 'visible';
+        nextBtn.style.visibility = num >= pdfDoc.numPages ? 'hidden' : 'visible';
+      });
+    }
+
+    function queueRenderPage(num) {
+      if (pageRendering) {
+        pageNumPending = num;
+      } else {
+        renderPage(num);
+      }
+    }
+
+    function goPrevPage() {
+      if (pageNum <= 1) return;
+      pageNum--;
+      queueRenderPage(pageNum);
+    }
+
+    function goNextPage() {
+      if (pageNum >= pdfDoc.numPages) return;
+      pageNum++;
+      queueRenderPage(pageNum);
+    }
+
+    prevBtn.addEventListener('click', goPrevPage);
+    nextBtn.addEventListener('click', goNextPage);
+
+    document.addEventListener('keydown', (e) => {
+      if (pdfContainer.classList.contains('show')) {
+        if (e.key === 'ArrowLeft') goPrevPage();
+        else if (e.key === 'ArrowRight') goNextPage();
+      }
+    });
 
     function openGift() {
       giftBox.classList.remove('gift-animate');
@@ -216,18 +300,25 @@
 
       setTimeout(() => {
         giftBox.style.display = 'none';
-        message.classList.add('show');
-        // 將 iframe.src 指向 PDF，再顯示容器
-        pdfEmbed.src = window.pdfUrl;
         pdfContainer.classList.add('show');
-
         try {
           sound.play().catch(() => {});
           confetti({ particleCount: 150, spread: 120, origin: { y: 0.6 } });
+          loadPdf();
         } catch (err) {
           console.log('Error:', err);
         }
       }, 500);
+    }
+
+    function loadPdf() {
+      pdfjsLib.getDocument(window.pdfUrl).promise.then(function(pdf) {
+        pdfDoc = pdf;
+        pageCountSpan.textContent = pdf.numPages;
+        renderPage(pageNum);
+      }).catch(err => {
+        console.error('PDF loading error:', err);
+      });
     }
 
     openButton.addEventListener('click', e => {
@@ -236,7 +327,7 @@
     });
 
     giftBox.addEventListener('click', openGift);
-    giftBox.addEventListener('keydown', event => {
+    giftBox.addEventListener('keydown', (event) => {
       if (event.key === 'Enter' || event.key === ' ') {
         event.preventDefault();
         openGift();
